@@ -21,6 +21,13 @@ CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS").split(",")
 SERVICE_ID = os.environ.get("SERVICE_ID")
 SERVICE_SECRET = os.environ.get("SERVICE_SECRET")
 
+# Recommendations
+# Source of event data. "in_memory" reads seed_events.json from
+# api/gateways/. Switch to "http" once the parser API is ready and
+# implement HttpEventGateway alongside the in-memory one.
+EVENT_GATEWAY = os.environ.get("EVENT_GATEWAY", "in_memory")
+EVENTS_API_BASE_URL = os.environ.get("EVENTS_API_BASE_URL", "")
+
 
 # Installed Apps
 
