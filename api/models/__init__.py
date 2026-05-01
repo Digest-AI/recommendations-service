@@ -1,13 +1,9 @@
-from .cached_event import CachedEvent
 from .interaction import Interaction
 from .recommendation import Recommendation
-from .recommendation_log import RecommendationLog
 from .user_profile import UserProfile
 
 __all__ = [
-    "CachedEvent",
     "Interaction",
     "Recommendation",
-    "RecommendationLog",
     "UserProfile",
 ]

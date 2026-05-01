@@ -1,6 +1,7 @@
 from django.urls import path
 
 from api.views import (
+    DailyRefreshTriggerView,
     InteractionsView,
     NewRecommendationsView,
     RecommendationsView,
@@ -9,6 +10,11 @@ from api.views import (
 )
 
 urlpatterns = [
+    path(
+        "jobs/daily-refresh/",
+        DailyRefreshTriggerView.as_view(),
+        name="daily-refresh-trigger",
+    ),
     path("recommendations/", RecommendationsView.as_view(), name="recommendations"),
     path("recommendations/new/", NewRecommendationsView.as_view(), name="recommendations-new"),
     path("interactions/", InteractionsView.as_view(), name="interactions"),

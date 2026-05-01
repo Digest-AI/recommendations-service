@@ -8,12 +8,6 @@ def mmr_rerank(
     top_k: int,
     lambda_: float = 0.7,
 ) -> list[ScoredEvent]:
-    """Maximal Marginal Relevance — re-rank for diversity.
-
-    Penalises picking another event that shares the same category, venue,
-    or source as something already chosen. Cheap and intuitive; swap for
-    embedding-cosine diversity once embeddings exist.
-    """
     if top_k <= 0 or not candidates:
         return []
 

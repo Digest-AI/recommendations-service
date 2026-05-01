@@ -8,8 +8,6 @@ djangorestframework==3.17.1
 djangorestframework-stubs==3.16.9
 drf-spectacular==0.29.0
 drf-spectacular-sidecar==2026.4.14
-APScheduler==3.10.4
-django-apscheduler==0.7.0
 inflection==0.5.1
 jsonschema==4.26.0
 jsonschema-specifications==2025.9.1
