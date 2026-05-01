@@ -1,17 +1,19 @@
 from rest_framework import serializers
 
-from .event import EventSerializer
+from api.models import Recommendation
+
+from .cached_event import CachedEventSerializer
 
 
-class RecommendationSerializer(serializers.Serializer):
-    rank = serializers.IntegerField()
-    score = serializers.FloatField()
-    feature_breakdown = serializers.DictField(child=serializers.FloatField())
-    event = EventSerializer()
+class RecommendationSerializer(serializers.ModelSerializer):
+    event = CachedEventSerializer(source="cached_event", read_only=True)
+    is_new = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = Recommendation
+        fields = ["rank", "score", "is_new", "event", "created_at"]
+        read_only_fields = fields
 
 
 class RecommendationQuerySerializer(serializers.Serializer):
     user_id = serializers.CharField(required=True)
-    limit = serializers.IntegerField(required=False, default=10, min_value=1, max_value=50)
-    diversity = serializers.FloatField(required=False, default=0.7, min_value=0.0, max_value=1.0)
-    exclude_seen = serializers.BooleanField(required=False, default=True)

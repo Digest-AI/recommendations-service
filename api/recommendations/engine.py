@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from api.dto import EventFilters
+from api.dto import EventDTO, EventFilters
 from api.gateways import get_event_gateway
 from api.models import RecommendationLog
 
@@ -30,17 +30,42 @@ class RecommendationEngine:
 
         filters = self._filters_for(ctx)
         candidates = self._gateway.list(filters)
-        if request.exclude_seen and ctx.seen_event_ids:
-            candidates = [e for e in candidates if e.id not in ctx.seen_event_ids]
-        if not candidates:
-            return []
-
-        scorer = ContentScorer()
-        scored = [scorer.score(event, ctx) for event in candidates]
-        ranked = mmr_rerank(scored, top_k=request.limit, lambda_=request.diversity)
+        ranked = self._rank(ctx, candidates, request.limit, request.diversity, request.exclude_seen)
 
         self._log(request.user_id, ranked)
         return ranked
+
+    def score_for_user(
+        self,
+        user_id: str,
+        candidates: list[EventDTO],
+        limit: int,
+        diversity: float = 0.7,
+        exclude_seen: bool = True,
+    ) -> list[ScoredEvent]:
+        """Rank a pre-fetched candidate list for one user.
+
+        Used by the daily 3am job: events are fetched once, then this is
+        called per user. No gateway list() call, no logging.
+        """
+        ctx = UserContext.build(user_id, self._gateway.get)
+        return self._rank(ctx, candidates, limit, diversity, exclude_seen)
+
+    @staticmethod
+    def _rank(
+        ctx: UserContext,
+        candidates: list[EventDTO],
+        limit: int,
+        diversity: float,
+        exclude_seen: bool,
+    ) -> list[ScoredEvent]:
+        if exclude_seen and ctx.seen_event_ids:
+            candidates = [e for e in candidates if e.id not in ctx.seen_event_ids]
+        if not candidates:
+            return []
+        scorer = ContentScorer()
+        scored = [scorer.score(event, ctx) for event in candidates]
+        return mmr_rerank(scored, top_k=limit, lambda_=diversity)
 
     @staticmethod
     def _filters_for(ctx: UserContext) -> EventFilters:

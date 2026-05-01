@@ -8,6 +8,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = UserProfile
         fields = [
             "user_id",
+            "tg_id",
             "preferred_categories",
             "preferred_raw_categories",
             "home_city",
