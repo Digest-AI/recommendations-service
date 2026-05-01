@@ -1,13 +1,16 @@
-from .cached_event import CachedEventSerializer
-from .event import EventSerializer
 from .interaction import InteractionSerializer
+from .jobs import DailyRefreshStatsSerializer
 from .profile import UserProfileSerializer
-from .recommendation import RecommendationQuerySerializer, RecommendationSerializer
+from .recommendation import (
+    NewRecommendationQuerySerializer,
+    RecommendationQuerySerializer,
+    RecommendationSerializer,
+)
 
 __all__ = [
-    "CachedEventSerializer",
-    "EventSerializer",
+    "DailyRefreshStatsSerializer",
     "InteractionSerializer",
+    "NewRecommendationQuerySerializer",
     "RecommendationQuerySerializer",
     "RecommendationSerializer",
     "UserProfileSerializer",

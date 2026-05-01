@@ -6,13 +6,14 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from api.dto import EventDTO
 from api.models import Interaction, UserProfile
+
+from .types import RankableEvent
 
 
 @dataclass(frozen=True)
 class ScoredEvent:
-    event: EventDTO
+    event: RankableEvent
     score: float
     breakdown: dict[str, float]
 
@@ -22,13 +23,13 @@ class UserContext:
     """Everything the scorer needs about a user. Built once per request."""
 
     profile: UserProfile | None
-    seen_event_ids: set[str]
+    seen_event_ids: set[int]
     venue_affinity: dict[str, int]
     source_affinity: dict[str, int]
     category_affinity: dict[str, int]
 
     @classmethod
-    def build(cls, user_id: str, gateway_get_event) -> UserContext:
+    def build(cls, user_id: str, fetch_rankable) -> UserContext:
         try:
             profile = UserProfile.objects.get(user_id=user_id)
         except UserProfile.DoesNotExist:
@@ -40,7 +41,7 @@ class UserContext:
             .values("event_id", "kind")[:200]
         )
 
-        seen: set[str] = set()
+        seen: set[int] = set()
         venue_counts: Counter[str] = Counter()
         source_counts: Counter[str] = Counter()
         category_counts: Counter[str] = Counter()
@@ -52,15 +53,20 @@ class UserContext:
         }
 
         for row in recent:
-            seen.add(row["event_id"])
+            try:
+                eid = int(row["event_id"])
+            except (TypeError, ValueError):
+                continue
+            seen.add(eid)
             if row["kind"] not in positive_kinds:
                 continue
-            event = gateway_get_event(row["event_id"])
+            event = fetch_rankable(eid)
             if event is None:
                 continue
             if event.venue_name:
                 venue_counts[event.venue_name] += 1
-            source_counts[event.source] += 1
+            if event.source:
+                source_counts[event.source] += 1
             category_counts[event.category] += 1
 
         return cls(
@@ -73,12 +79,7 @@ class UserContext:
 
 
 class ContentScorer:
-    """Linear combination of interpretable features.
-
-    Weights are intentionally hand-tuned and visible. Once you have ~5k
-    logged interactions, replace this with a LightGBM ranker trained on
-    the same feature breakdown.
-    """
+    """Hand-tuned linear model: ``score`` is a weighted sum of features in [0, 1], not P(click)."""
 
     weights = {
         "category_match": 0.30,
@@ -94,7 +95,7 @@ class ContentScorer:
     def __init__(self, now: datetime | None = None):
         self._now = now or datetime.now(timezone.utc)
 
-    def score(self, event: EventDTO, ctx: UserContext) -> ScoredEvent:
+    def score(self, event: RankableEvent, ctx: UserContext) -> ScoredEvent:
         features = {
             "category_match": self._category_match(event, ctx),
             "raw_category_overlap": self._raw_overlap(event, ctx),
@@ -108,13 +109,13 @@ class ContentScorer:
         total = sum(self.weights[name] * value for name, value in features.items())
         return ScoredEvent(event=event, score=total, breakdown=features)
 
-    def _category_match(self, event: EventDTO, ctx: UserContext) -> float:
+    def _category_match(self, event: RankableEvent, ctx: UserContext) -> float:
         if ctx.profile is None:
             return 0.0
         prefs = set(ctx.profile.preferred_categories or [])
         return 1.0 if event.category in prefs else 0.0
 
-    def _raw_overlap(self, event: EventDTO, ctx: UserContext) -> float:
+    def _raw_overlap(self, event: RankableEvent, ctx: UserContext) -> float:
         if ctx.profile is None:
             return 0.0
         prefs = {tag.lower() for tag in (ctx.profile.preferred_raw_categories or [])}
@@ -127,12 +128,12 @@ class ContentScorer:
         union = prefs | event_tags
         return len(intersection) / len(union)
 
-    def _city_match(self, event: EventDTO, ctx: UserContext) -> float:
+    def _city_match(self, event: RankableEvent, ctx: UserContext) -> float:
         if ctx.profile is None or not event.city:
             return 0.0
         return 1.0 if event.city == ctx.profile.home_city else 0.0
 
-    def _price_fit(self, event: EventDTO, ctx: UserContext) -> float:
+    def _price_fit(self, event: RankableEvent, ctx: UserContext) -> float:
         if event.is_free:
             return 1.0
         if ctx.profile is None or ctx.profile.max_price is None:
@@ -145,7 +146,7 @@ class ContentScorer:
         overshoot = float((event.price_from - budget) / budget)
         return max(0.0, 1.0 - overshoot)
 
-    def _recency(self, event: EventDTO) -> float:
+    def _recency(self, event: RankableEvent) -> float:
         if event.date_start is None:
             return 0.0
         days_until = (event.date_start - self._now).total_seconds() / 86400
@@ -153,19 +154,19 @@ class ContentScorer:
             return 0.0
         return math.exp(-days_until / 14.0)
 
-    def _venue_affinity(self, event: EventDTO, ctx: UserContext) -> float:
+    def _venue_affinity(self, event: RankableEvent, ctx: UserContext) -> float:
         if not event.venue_name or not ctx.venue_affinity:
             return 0.0
         count = ctx.venue_affinity.get(event.venue_name, 0)
         return min(1.0, math.log1p(count) / math.log(5))
 
-    def _source_affinity(self, event: EventDTO, ctx: UserContext) -> float:
+    def _source_affinity(self, event: RankableEvent, ctx: UserContext) -> float:
         if not ctx.source_affinity:
             return 0.0
         total = sum(ctx.source_affinity.values()) or 1
         return ctx.source_affinity.get(event.source, 0) / total
 
-    def _category_affinity(self, event: EventDTO, ctx: UserContext) -> float:
+    def _category_affinity(self, event: RankableEvent, ctx: UserContext) -> float:
         if not ctx.category_affinity:
             return 0.0
         total = sum(ctx.category_affinity.values()) or 1

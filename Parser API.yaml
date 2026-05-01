@@ -1,0 +1,982 @@
+openapi: 3.0.3
+info:
+  title: Parser API
+  version: 1.0.0
+paths:
+  /api/categories/:
+    get:
+      operationId: api_categories_retrieve
+      description: Returns all available event categories with their display name
+        and the count of active events in each category.
+      summary: List categories
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    slug:
+                      type: string
+                      example: concert
+                    name_ru:
+                      type: string
+                      example: Концерт
+                    name_ro:
+                      type: string
+                      example: Concert
+                    count:
+                      type: integer
+                      example: 42
+          description: ''
+  /api/category/{category_slug}/:
+    get:
+      operationId: api_category_list
+      description: Returns a paginated list of scraped events from Moldova.
+      summary: List events
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Filter by category slug (can specify multiple separated by commas
+          or repeating the parameter)
+      - in: path
+        name: category_slug
+        schema:
+          type: string
+        required: true
+      - in: query
+        name: city
+        schema:
+          type: string
+        description: Filter by city (partial match)
+      - in: query
+        name: date_from
+        schema:
+          type: string
+        description: Filter events starting from date (YYYY-MM-DD)
+      - in: query
+        name: date_to
+        schema:
+          type: string
+        description: Filter events starting before date (YYYY-MM-DD)
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: place
+        schema:
+          type: string
+        description: Filter by place name (partial match)
+      - in: query
+        name: price_max
+        schema:
+          type: string
+        description: Maximum ticket price (MDL)
+      - in: query
+        name: price_min
+        schema:
+          type: string
+        description: Minimum ticket price (MDL)
+      - in: query
+        name: provider
+        schema:
+          type: string
+        description: Filter by provider slug
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: Full-text search in title, description and place
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEventListList'
+          description: ''
+  /api/cities/:
+    get:
+      operationId: api_cities_retrieve
+      description: Returns all available cities where events are happening, along
+        with the count of active events in each city.
+      summary: List cities
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cities:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: Кишинёв
+                        count:
+                          type: integer
+                          example: 150
+          description: ''
+  /api/city/{city_name}/:
+    get:
+      operationId: api_city_list
+      description: Returns a paginated list of scraped events from Moldova.
+      summary: List events
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Filter by category slug (can specify multiple separated by commas
+          or repeating the parameter)
+      - in: query
+        name: city
+        schema:
+          type: string
+        description: Filter by city (partial match)
+      - in: path
+        name: city_name
+        schema:
+          type: string
+        required: true
+      - in: query
+        name: date_from
+        schema:
+          type: string
+        description: Filter events starting from date (YYYY-MM-DD)
+      - in: query
+        name: date_to
+        schema:
+          type: string
+        description: Filter events starting before date (YYYY-MM-DD)
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: place
+        schema:
+          type: string
+        description: Filter by place name (partial match)
+      - in: query
+        name: price_max
+        schema:
+          type: string
+        description: Maximum ticket price (MDL)
+      - in: query
+        name: price_min
+        schema:
+          type: string
+        description: Minimum ticket price (MDL)
+      - in: query
+        name: provider
+        schema:
+          type: string
+        description: Filter by provider slug
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: Full-text search in title, description and place
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEventListList'
+          description: ''
+  /api/events/:
+    get:
+      operationId: api_events_list
+      description: Returns a paginated list of scraped events from Moldova.
+      summary: List events
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Filter by category slug (can specify multiple separated by commas
+          or repeating the parameter)
+      - in: query
+        name: city
+        schema:
+          type: string
+        description: Filter by city (partial match)
+      - in: query
+        name: date_from
+        schema:
+          type: string
+        description: Filter events starting from date (YYYY-MM-DD)
+      - in: query
+        name: date_to
+        schema:
+          type: string
+        description: Filter events starting before date (YYYY-MM-DD)
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: place
+        schema:
+          type: string
+        description: Filter by place name (partial match)
+      - in: query
+        name: price_max
+        schema:
+          type: string
+        description: Maximum ticket price (MDL)
+      - in: query
+        name: price_min
+        schema:
+          type: string
+        description: Minimum ticket price (MDL)
+      - in: query
+        name: provider
+        schema:
+          type: string
+        description: Filter by provider slug
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: Full-text search in title, description and place
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEventListList'
+          description: ''
+  /api/events/{id}/:
+    get:
+      operationId: api_events_retrieve
+      description: |-
+        Read-only API for querying scraped Moldova events.
+
+        Supports filtering by category, provider, city, date range.
+      summary: Get event details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Event.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+  /api/events/by-date/:
+    get:
+      operationId: api_events_by_date_retrieve
+      description: Returns all active events on a specific date. Pass `date=YYYY-MM-DD`
+        as a query parameter.
+      summary: Get events by date
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+        description: Target date in YYYY-MM-DD format (defaults to today)
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+  /api/events/next-14-days/:
+    get:
+      operationId: api_events_next_14_days_retrieve
+      description: Returns active events scheduled within the next 14 days (including
+        today).
+      summary: Get events for the next 14 days
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+  /api/events/next-3-months/:
+    get:
+      operationId: api_events_next_3_months_retrieve
+      description: Returns active events scheduled within the next 90 days (including
+        today).
+      summary: Get events for the next 3 months
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+  /api/events/next-7-days/:
+    get:
+      operationId: api_events_next_7_days_retrieve
+      description: Returns active events scheduled within the next 7 days (including
+        today).
+      summary: Get events for the next 7 days
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+  /api/events/next-month/:
+    get:
+      operationId: api_events_next_month_retrieve
+      description: Returns active events scheduled within the next 30 days (including
+        today).
+      summary: Get events for the next month
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+  /api/events/scrape/:
+    post:
+      operationId: api_events_scrape_create
+      description: Immediately starts a synchronous scrape for the given source/category.
+        ⚠️ Runs in the request thread — for production use a Celery task instead.
+      summary: Trigger scrape
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: 'Category slug to scrape (default: all)'
+      - in: query
+        name: deep
+        schema:
+          type: string
+        description: 'Set to ''true'' for deep mode: visits each event page for full
+          description, venue address and date_end. Much slower but collects maximum
+          data.'
+      - in: query
+        name: source
+        schema:
+          type: string
+        description: 'Source to scrape (afisha_md, iticket_md, cineplex_md). Default:
+          afisha_md'
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  created:
+                    type: integer
+                  updated:
+                    type: integer
+          description: ''
+  /api/events/this-week/:
+    get:
+      operationId: api_events_this_week_retrieve
+      description: Returns all active events scheduled within the current calendar
+        week (Mon–Sun).
+      summary: Get this week's events
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+  /api/events/today/:
+    get:
+      operationId: api_events_today_retrieve
+      description: Returns all active events scheduled for today.
+      summary: Get today's events
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+  /api/events/upcoming/:
+    get:
+      operationId: api_events_upcoming_retrieve
+      description: Returns events starting from now onward, ordered by date.
+      summary: Get upcoming events
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+  /api/sources/:
+    get:
+      operationId: api_sources_retrieve
+      description: Returns all available event providers with their display name and
+        the count of active events from each provider.
+      summary: List providers
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    slug:
+                      type: string
+                      example: afisha_md
+                    name:
+                      type: string
+                      example: Afisha.md
+                    url:
+                      type: string
+                    count:
+                      type: integer
+                      example: 120
+          description: ''
+  /schema/:
+    get:
+      operationId: schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - schema
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+components:
+  schemas:
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        slug:
+          type: string
+          maxLength: 64
+        name_ru:
+          type: string
+          maxLength: 128
+        name_ro:
+          type: string
+          maxLength: 128
+      required:
+      - id
+      - name_ro
+      - name_ru
+      - slug
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        slug:
+          type: string
+          maxLength: 256
+          pattern: ^[-a-zA-Z0-9_]+$
+        provider:
+          allOf:
+          - $ref: '#/components/schemas/Provider'
+          readOnly: true
+        external_id:
+          type: string
+          maxLength: 128
+        url:
+          type: string
+          format: uri
+          maxLength: 512
+        title_ru:
+          type: string
+          maxLength: 512
+        title_ro:
+          type: string
+          maxLength: 512
+        description_ru:
+          type: string
+        description_ro:
+          type: string
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+          readOnly: true
+        date_start:
+          type: string
+          format: date-time
+          nullable: true
+        date_end:
+          type: string
+          format: date-time
+          nullable: true
+        address:
+          type: string
+          maxLength: 512
+        place:
+          type: string
+          maxLength: 256
+        city:
+          type: string
+          maxLength: 128
+        price_from:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        price_to:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        image_url:
+          type: string
+          format: uri
+          maxLength: 1024
+        tickets_url:
+          type: string
+          format: uri
+          maxLength: 1024
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - categories
+      - created_at
+      - id
+      - provider
+      - slug
+      - url
+    EventList:
+      type: object
+      description: Lightweight serializer for list endpoints.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        slug:
+          type: string
+          maxLength: 256
+          pattern: ^[-a-zA-Z0-9_]+$
+        provider:
+          allOf:
+          - $ref: '#/components/schemas/Provider'
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          maxLength: 512
+        title_ru:
+          type: string
+          maxLength: 512
+        title_ro:
+          type: string
+          maxLength: 512
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+          readOnly: true
+        date_start:
+          type: string
+          format: date-time
+          nullable: true
+        address:
+          type: string
+          maxLength: 512
+        place:
+          type: string
+          maxLength: 256
+        city:
+          type: string
+          maxLength: 128
+        price_from:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        price_to:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        image_url:
+          type: string
+          format: uri
+          maxLength: 1024
+      required:
+      - categories
+      - id
+      - provider
+      - slug
+      - url
+    PaginatedEventListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventList'
+    Provider:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        slug:
+          type: string
+          maxLength: 64
+        name:
+          type: string
+          maxLength: 128
+        url:
+          type: string
+          format: uri
+          maxLength: 512
+      required:
+      - id
+      - name
+      - slug
+      - url
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid

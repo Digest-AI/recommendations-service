@@ -2,9 +2,7 @@ from django.db import models
 
 
 class Interaction(models.Model):
-    """A signal from a user about an event. Drives both ranking and the
-    eventual ML training set.
-    """
+    """A signal from a user about an event (parser-side numeric ``event_id``)."""
 
     class Kind(models.TextChoices):
         VIEW = "view", "View"
@@ -14,7 +12,7 @@ class Interaction(models.Model):
         DISMISS = "dismiss", "Dismiss"
 
     user_id = models.CharField(max_length=64, db_index=True)
-    event_id = models.CharField(max_length=64, db_index=True)
+    event_id = models.BigIntegerField(db_index=True)
     kind = models.CharField(max_length=16, choices=Kind.choices)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
