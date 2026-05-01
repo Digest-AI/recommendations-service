@@ -14,6 +14,7 @@ class UserProfile(models.Model):
         RO = "ro", "Română"
 
     user_id = models.CharField(max_length=64, unique=True, db_index=True)
+    tg_id = models.BigIntegerField(null=True, blank=True, db_index=True)
 
     preferred_categories = models.JSONField(default=list, blank=True)
     preferred_raw_categories = models.JSONField(default=list, blank=True)

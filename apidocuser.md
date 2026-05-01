@@ -1,4 +1,3 @@
-
 # User Service — API Documentation
 
 Base URL: `https://<host>/api`
@@ -104,11 +103,7 @@ Starts the registration flow. Validates input, stores a pending registration, an
 ```json
 {
   "email": "user@example.com",
-  "password": "SecurePass123",
-  "name": "John",
-  "surname": "Doe",
-  "age": 25,
-  "gender": "male"
+  "password": "SecurePass123"
 }
 ```
 
@@ -116,10 +111,8 @@ Starts the registration flow. Validates input, stores a pending registration, an
 |-------|------|-------------|
 | `email` | string | Valid email format, trimmed and lowercased |
 | `password` | string | Any non-empty string |
-| `name` | string | Trimmed |
-| `surname` | string | Trimmed |
-| `age` | int | 0–120 |
-| `gender` | string | One of: `male`, `female`, `other`, `unknown`, `prefer_not_to_say` |
+
+> Profile fields (`name`, `surname`, `age`, `gender`) are not collected at registration. The account is created with empty name/surname, `age = 0`, and `gender = "unknown"`. Use `PUT /api/user/me` after login to populate them.
 
 **Responses:**
 
@@ -347,7 +340,7 @@ Returns the authenticated user's profile.
 
 ### `PUT /api/user/me`
 
-Updates the authenticated user's profile. Currently only `age` can be updated.
+Updates the authenticated user's profile.
 
 **Auth:** Bearer token required
 
@@ -355,13 +348,19 @@ Updates the authenticated user's profile. Currently only `age` can be updated.
 
 ```json
 {
-  "age": 26
+  "name": "John",
+  "surname": "Doe",
+  "age": 26,
+  "gender": "male"
 }
 ```
 
-| Field | Constraints |
-|-------|-------------|
-| `age` | 0–120 |
+| Field | Type | Constraints |
+|-------|------|-------------|
+| `name` | string | Required, trimmed |
+| `surname` | string | Required, trimmed |
+| `age` | int | 0–120 |
+| `gender` | string | One of: `male`, `female`, `other`, `unknown`, `prefer_not_to_say` |
 
 **Responses:**
 

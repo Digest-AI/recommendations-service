@@ -28,6 +28,24 @@ SERVICE_SECRET = os.environ.get("SERVICE_SECRET")
 EVENT_GATEWAY = os.environ.get("EVENT_GATEWAY", "in_memory")
 EVENTS_API_BASE_URL = os.environ.get("EVENTS_API_BASE_URL", "")
 
+# Daily refresh job
+DAILY_REFRESH_HOUR = int(os.environ.get("DAILY_REFRESH_HOUR", 3))
+DAILY_REFRESH_MINUTE = int(os.environ.get("DAILY_REFRESH_MINUTE", 0))
+DAILY_REC_LIMIT = int(os.environ.get("DAILY_REC_LIMIT", 20))
+RUN_SCHEDULER = os.environ.get("RUN_SCHEDULER", "false").lower() == "true"
+
+# Telegram bot push
+TG_SERVICE_BASE_URL = os.environ.get("TG_SERVICE_BASE_URL", "")
+TG_SERVICE_SECRET = os.environ.get("TG_SERVICE_SECRET", "")
+TG_SERVICE_TIMEOUT = float(os.environ.get("TG_SERVICE_TIMEOUT", 10.0))
+TG_SERVICE_RETRIES = int(os.environ.get("TG_SERVICE_RETRIES", 2))
+TG_NOTIFY_HOUR = int(os.environ.get("TG_NOTIFY_HOUR", 10))
+TG_NOTIFY_MINUTE = int(os.environ.get("TG_NOTIFY_MINUTE", 0))
+
+# User service (for Bearer-token validation on user-facing endpoints)
+USER_SERVICE_BASE_URL = os.environ.get("USER_SERVICE_BASE_URL", "")
+USER_SERVICE_TIMEOUT = float(os.environ.get("USER_SERVICE_TIMEOUT", 5.0))
+
 
 # Installed Apps
 
@@ -43,6 +61,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "drf_spectacular",
     "drf_spectacular_sidecar",
+    "django_apscheduler",
 ]
 
 # Middleware
