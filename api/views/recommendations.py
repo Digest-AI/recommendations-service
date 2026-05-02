@@ -54,7 +54,8 @@ class RecommendationsView(APIView):
 class NewRecommendationsView(APIView):
     """GET /api/recommendations/new/[?userId=]
 
-    Only ``is_new=True``, same score floor as the main recommendations list.
+    Only ``is_new=True``, same score floor as the main list.
+    Without ``userId``: every item includes ``publicId`` (user's public id).
     """
 
     authentication_classes: list = []
@@ -78,5 +79,9 @@ class NewRecommendationsView(APIView):
             qs = qs.filter(user_id=raw_uid)
         qs = apply_api_score_floor(qs.order_by("user_id", "-created_at", "rank"))
 
-        payload = RecommendationSerializer(list(qs), many=True).data
+        payload = RecommendationSerializer(
+            list(qs),
+            many=True,
+            context={"include_public_id": not raw_uid},
+        ).data
         return Response(payload, status=status.HTTP_200_OK)
