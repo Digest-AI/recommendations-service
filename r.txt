@@ -1,6 +1,8 @@
+APScheduler==3.10.4
 asgiref==3.11.1
 attrs==26.1.0
 Django==5.2.13
+django-apscheduler==0.7.0
 django-cors-headers==4.9.0
 django-stubs==6.0.3
 django-stubs-ext==6.0.3
@@ -16,11 +18,14 @@ mypy==1.20.2
 mypy_extensions==1.1.0
 pathspec==1.1.0
 python-dotenv==1.2.2
+pytz==2026.1.post1
 PyYAML==6.0.3
 referencing==0.37.0
 rpds-py==0.30.0
+six==1.17.0
 sqlparse==0.5.5
 types-PyYAML==6.0.12.20260408
 typing_extensions==4.15.0
 tzdata==2026.2
+tzlocal==5.3.1
 uritemplate==4.2.0

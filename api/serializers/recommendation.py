@@ -13,6 +13,8 @@ class RecommendationSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         if data.get("score") is not None:
             data["score"] = round(float(data["score"]), 2)
+        if self.context.get("include_public_id"):
+            data["public_id"] = instance.user_id
         return data
 
 
